@@ -36,13 +36,10 @@ function fromCell(cell: Cell, area: Rect, gaps: Gaps): Rect {
   return { x: left, y: top, w: Math.max(0, right - left), h: Math.max(0, bottom - top) };
 }
 
-export function computeFrame(position: Position, screen: Screen, gaps: Gaps): Rect {
+export function computeFrame(position: Exclude<Position, "center">, screen: Screen, gaps: Gaps): Rect {
   const area = screen.visibleFrame;
   if (position === "maximize") {
     return fromCell({ fx: 0, fy: 0, fw: 1, fh: 1, edges: ALL_SCREEN }, area, gaps);
-  }
-  if (position === "center") {
-    throw new Error("center handled by computeCenter");
   }
   return fromCell(CELLS[position], area, gaps);
 }
