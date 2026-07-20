@@ -88,3 +88,25 @@ describe("computeCustom", () => {
     expect(r).toEqual({ x: 600, y: 100, w: 400, h: 100 });
   });
 });
+
+describe("computeFrame / computeCenter — never returns negative dimensions", () => {
+  const small: Screen = {
+    frame: { x: 0, y: 0, w: 900, h: 600 },
+    visibleFrame: { x: 0, y: 0, w: 900, h: 600 },
+  };
+  it("center-third with huge windowGap clamps width to 0, not negative", () => {
+    const r = computeFrame("center-third", small, { screenGap: 0, windowGap: 400 });
+    expect(r.w).toBe(0);
+    expect(r.h).toBeGreaterThanOrEqual(0);
+  });
+  it("maximize with screenGap larger than half the screen clamps to 0", () => {
+    const r = computeFrame("maximize", small, { screenGap: 500, windowGap: 0 });
+    expect(r.w).toBe(0);
+    expect(r.h).toBe(0);
+  });
+  it("computeCenter with oversized screenGap clamps to 0, not negative", () => {
+    const r = computeCenter({ x: 0, y: 0, w: 800, h: 600 }, small, { screenGap: 500, windowGap: 0 });
+    expect(r.w).toBe(0);
+    expect(r.h).toBe(0);
+  });
+});

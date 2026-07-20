@@ -33,7 +33,7 @@ function fromCell(cell: Cell, area: Rect, gaps: Gaps): Rect {
   const top = area.y + cell.fy * area.h + inset(cell.edges.top, gaps);
   const right = area.x + (cell.fx + cell.fw) * area.w - inset(cell.edges.right, gaps);
   const bottom = area.y + (cell.fy + cell.fh) * area.h - inset(cell.edges.bottom, gaps);
-  return { x: left, y: top, w: right - left, h: bottom - top };
+  return { x: left, y: top, w: Math.max(0, right - left), h: Math.max(0, bottom - top) };
 }
 
 export function computeFrame(position: Position, screen: Screen, gaps: Gaps): Rect {
@@ -48,8 +48,8 @@ export function computeFrame(position: Position, screen: Screen, gaps: Gaps): Re
 }
 
 function clampRect(r: Rect, area: Rect): Rect {
-  const w = Math.min(r.w, area.w);
-  const h = Math.min(r.h, area.h);
+  const w = Math.max(0, Math.min(r.w, area.w));
+  const h = Math.max(0, Math.min(r.h, area.h));
   const x = Math.min(Math.max(r.x, area.x), area.x + area.w - w);
   const y = Math.min(Math.max(r.y, area.y), area.y + area.h - h);
   return { x, y, w, h };
@@ -63,8 +63,8 @@ export function computeCenter(win: Rect, screen: Screen, gaps: Gaps): Rect {
     w: area.w - 2 * gaps.screenGap,
     h: area.h - 2 * gaps.screenGap,
   };
-  const w = Math.min(win.w, bounded.w);
-  const h = Math.min(win.h, bounded.h);
+  const w = Math.min(win.w, Math.max(0, bounded.w));
+  const h = Math.min(win.h, Math.max(0, bounded.h));
   return {
     x: Math.round(bounded.x + (bounded.w - w) / 2),
     y: Math.round(bounded.y + (bounded.h - h) / 2),
