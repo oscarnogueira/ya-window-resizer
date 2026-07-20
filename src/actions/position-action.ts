@@ -2,10 +2,9 @@ import streamDeck, { action, SingletonAction, type KeyDownEvent } from "@elgato/
 import { windowApi } from "../native/window";
 import { pickScreen } from "../geometry/pick-screen";
 import { computeFrame, computeCenter } from "../geometry/compute-frame";
-import { resolveGaps, type PositionSettings, type GlobalSettings } from "../settings";
+import { resolveGaps, accent, type PositionSettings } from "../settings";
 import type { Position } from "../geometry/types";
 import { positionIcon, svgToDataUri } from "../icons/position-icon";
-import { accent } from "../settings";
 import type { WillAppearEvent, DidReceiveSettingsEvent, KeyAction, DialAction } from "@elgato/streamdeck";
 
 @action({ UUID: "fyi.oz.yet-another-window-resizer.position" })
@@ -23,8 +22,7 @@ export class PositionAction extends SingletonAction<PositionSettings> {
     }
     const screens = windowApi.getScreens();
     const screen = pickScreen(win, screens);
-    const global = (await streamDeck.settings.getGlobalSettings()) as GlobalSettings;
-    const gaps = resolveGaps(global, ev.payload.settings);
+    const gaps = resolveGaps(ev.payload.settings);
     const position: Position = ev.payload.settings.position ?? "maximize";
 
     const target =
