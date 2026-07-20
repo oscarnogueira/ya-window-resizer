@@ -4,6 +4,9 @@ import { pickScreen } from "../geometry/pick-screen";
 import { computeFrame, computeCenter } from "../geometry/compute-frame";
 import { resolveGaps, type PositionSettings, type GlobalSettings } from "../settings";
 import type { Position } from "../geometry/types";
+import { positionIcon, svgToDataUri } from "../icons/position-icon";
+import { accent } from "../settings";
+import type { WillAppearEvent, DidReceiveSettingsEvent, KeyAction, DialAction } from "@elgato/streamdeck";
 
 @action({ UUID: "com.oz.window-resizer.position" })
 export class PositionAction extends SingletonAction<PositionSettings> {
@@ -31,5 +34,28 @@ export class PositionAction extends SingletonAction<PositionSettings> {
 
     const ok = windowApi.setWindowFrame(win.pid, target.x, target.y, target.w, target.h);
     if (!ok) await ev.action.showAlert();
+  }
+
+  private renderKey(
+    action: KeyAction<PositionSettings> | DialAction<PositionSettings>,
+    settings: PositionSettings,
+  ): Promise<void> {
+    const position = settings.position ?? "maximize";
+    return action.setImage(svgToDataUri(positionIcon(position, accent.color)));
+  }
+
+  override onWillAppear(ev: WillAppearEvent<PositionSettings>): Promise<void> {
+    return this.renderKey(ev.action, ev.payload.settings);
+  }
+
+  override onDidReceiveSettings(ev: DidReceiveSettingsEvent<PositionSettings>): Promise<void> {
+    return this.renderKey(ev.action, ev.payload.settings);
+  }
+
+  async refreshAll(): Promise<void> {
+    for (const a of this.actions) {
+      const s = await a.getSettings<PositionSettings>();
+      await this.renderKey(a, s);
+    }
   }
 }
