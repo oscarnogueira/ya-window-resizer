@@ -49,14 +49,17 @@ static std::string AppNameForPid(pid_t pid) {
   return std::string();
 }
 
-// Returns { ok, x, y, w, h, pid, app, ...diagnostics } for the focused window
-// of the app the user is currently interacting with. `ok=false` means no usable
-// window was found. Coordinates are top-left origin (AX native).
+// Returns { ok, x, y, w, h, pid, app } for the focused window of the app the
+// user is currently interacting with. `ok=false` means no usable window was
+// found. Coordinates are top-left origin (AX native).
 //
-// Target app is resolved from CGWindowList (the frontmost on-screen window's
-// owner) — a live source, unlike NSWorkspace.frontmostApplication which is stale
-// in a process that never pumps an AppKit run loop. Diagnostic fields report all
-// three candidate sources so the discrepancy is visible in the logs.
+// The target app is resolved from CGWindowList (the frontmost on-screen window's
+// owner) — a live window-server query. We deliberately do NOT use
+// NSWorkspace.frontmostApplication: it is updated via AppKit activation
+// notifications that require a run loop the Node plugin never pumps, so it
+// reports a STALE app (verified: it named the previously-active app while a
+// different one was focused). NSWorkspace is kept only as a last-resort fallback
+// if CGWindowList yields nothing.
 Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   Napi::Object out = Napi::Object::New(env);
@@ -65,41 +68,20 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
 
   // Gather Cocoa/CF values inside an autorelease pool; copy anything we keep
   // into plain C++ types so nothing dangles once the pool drains.
-  std::string cgName, wsName;
-  pid_t cgPid = 0, wsPid = 0, axPid = 0;
-  AXError axAppErr = kAXErrorSuccess;
+  std::string appName;
+  pid_t pid = 0;
   @autoreleasepool {
-    // Source 1: CGWindowList (primary, live).
-    cgPid = FrontmostCGPid(cgName);
-
-    // Source 2: NSWorkspace (suspected stale).
-    NSRunningApplication* wsApp = [[NSWorkspace sharedWorkspace] frontmostApplication];
-    if (wsApp != nil) {
-      wsPid = wsApp.processIdentifier;
-      if (wsApp.localizedName != nil && wsApp.localizedName.UTF8String != NULL) {
-        wsName = std::string(wsApp.localizedName.UTF8String);
+    pid = FrontmostCGPid(appName);
+    if (pid == 0) {
+      NSRunningApplication* ws = [[NSWorkspace sharedWorkspace] frontmostApplication];
+      if (ws != nil) {
+        pid = ws.processIdentifier;
+        if (ws.localizedName != nil && ws.localizedName.UTF8String != NULL) {
+          appName = std::string(ws.localizedName.UTF8String);
+        }
       }
     }
-
-    // Source 3: system-wide AX focused application (with error code).
-    AXUIElementRef sys = AXUIElementCreateSystemWide();
-    AXUIElementRef axApp = NULL;
-    axAppErr = AXUIElementCopyAttributeValue(sys, kAXFocusedApplicationAttribute, (CFTypeRef*)&axApp);
-    CFRelease(sys);
-    if (axAppErr == kAXErrorSuccess && axApp != NULL) AXUIElementGetPid(axApp, &axPid);
-    if (axApp != NULL) CFRelease(axApp);
   }
-
-  out.Set("cgApp", Napi::String::New(env, cgName));
-  out.Set("cgPid", Napi::Number::New(env, cgPid));
-  out.Set("wsApp", Napi::String::New(env, wsName));
-  out.Set("wsPid", Napi::Number::New(env, wsPid));
-  out.Set("axPid", Napi::Number::New(env, axPid));
-  out.Set("axAppErr", Napi::Number::New(env, (int)axAppErr));
-
-  // Choose the target pid: CGWindowList first (live), then AX, then NSWorkspace.
-  pid_t pid = cgPid ? cgPid : (axPid ? axPid : wsPid);
-  out.Set("pid", Napi::Number::New(env, pid));
   if (pid == 0) return out;
 
   AXUIElementRef appEl = AXUIElementCreateApplication(pid);
@@ -107,7 +89,6 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
 
   AXUIElementRef window = NULL;
   AXError winErr = AXUIElementCopyAttributeValue(appEl, kAXFocusedWindowAttribute, (CFTypeRef*)&window);
-  out.Set("winErr", Napi::Number::New(env, (int)winErr));
   if (winErr != kAXErrorSuccess || window == NULL) {
     CFRelease(appEl);
     return out;
@@ -126,18 +107,17 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   CFRelease(window);
   CFRelease(appEl);
 
-  std::string chosenName;
-  @autoreleasepool {
-    chosenName = AppNameForPid(pid);
+  if (appName.empty()) {
+    @autoreleasepool { appName = AppNameForPid(pid); }
   }
-  if (chosenName.empty()) chosenName = cgName;
 
   out.Set("ok", Napi::Boolean::New(env, true));
   out.Set("x", Napi::Number::New(env, pos.x));
   out.Set("y", Napi::Number::New(env, pos.y));
   out.Set("w", Napi::Number::New(env, size.width));
   out.Set("h", Napi::Number::New(env, size.height));
-  out.Set("app", Napi::String::New(env, chosenName));
+  out.Set("pid", Napi::Number::New(env, pid));
+  out.Set("app", Napi::String::New(env, appName));
   return out;
 }
 
