@@ -1010,9 +1010,23 @@ interface NativeWindow {
   setWindowFrame(pid: number, x: number, y: number, w: number, h: number): boolean;
 }
 
-export const windowApi: NativeWindow = native;
+/**
+ * Public API. This is the single rounding boundary: the geometry core returns
+ * raw floats (fractional thirds, etc.), and we round here — once — before the
+ * values cross into the macOS Accessibility API, which expects integer pixels.
+ */
+export const windowApi = {
+  isTrusted: () => native.isTrusted(),
+  getFrontmostWindow: () => native.getFrontmostWindow(),
+  getScreens: () => native.getScreens(),
+  setWindowFrame: (pid: number, x: number, y: number, w: number, h: number) =>
+    native.setWindowFrame(pid, Math.round(x), Math.round(y), Math.round(w), Math.round(h)),
+};
 export type { FrontWindow };
 ```
+
+Because rounding lives here, the action code (Task 13) passes the geometry
+output straight through — no rounding at the call sites.
 
 Note: the `require("../window.node")` path is relative to the **bundled** `bin/plugin.js`, not this source file. esbuild keeps `./window.node` external (see Task 1 build script); confirm the path resolves after Task 14's build. If it does not, adjust to an absolute path resolved from `import.meta.url`.
 
