@@ -66,8 +66,8 @@ export function computeCenter(win: Rect, screen: Screen, gaps: Gaps): Rect {
   const w = Math.min(win.w, Math.max(0, bounded.w));
   const h = Math.min(win.h, Math.max(0, bounded.h));
   return {
-    x: Math.round(bounded.x + (bounded.w - w) / 2),
-    y: Math.round(bounded.y + (bounded.h - h) / 2),
+    x: bounded.x + (bounded.w - w) / 2,
+    y: bounded.y + (bounded.h - h) / 2,
     w,
     h,
   };
