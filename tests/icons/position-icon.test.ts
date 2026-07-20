@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { positionIcon, customIcon, svgToDataUri } from "../../src/icons/position-icon";
+import { positionIcon, customIcon, cycleCornersIcon, svgToDataUri } from "../../src/icons/position-icon";
 
 const rectCount = (svg: string): number => (svg.match(/<rect/g) ?? []).length;
 
@@ -52,6 +52,22 @@ describe("positionIcon", () => {
 describe("customIcon", () => {
   it("includes the accent color", () => {
     expect(customIcon("#30D158")).toContain("#30D158");
+  });
+});
+
+describe("cycleCornersIcon", () => {
+  it("includes the accent color", () => {
+    expect(cycleCornersIcon("#7C5CFF")).toContain("#7C5CFF");
+  });
+  it("draws four dimmed corner tiles", () => {
+    const svg = cycleCornersIcon("#ffffff");
+    expect(rectCount(svg)).toBe(4);
+    expect((svg.match(/fill-opacity="0.22"/g) ?? []).length).toBe(4);
+  });
+  it("draws a stroked circular arrow", () => {
+    const svg = cycleCornersIcon("#ffffff");
+    expect(svg).toContain("stroke=");
+    expect(svg).toContain("<path");
   });
 });
 

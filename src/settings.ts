@@ -24,6 +24,13 @@ export type CustomSettings = {
   unit?: Unit;
 };
 
+export type CycleSettings = {
+  screenGap?: number;
+  windowGap?: number;
+  /** Next corner index in the clockwise cycle (0..3). */
+  index?: number;
+};
+
 /** Per-button gaps, defaulting to DEFAULT_GAP when unset. */
 export function resolveGaps(settings: { screenGap?: number; windowGap?: number }): Gaps {
   return {

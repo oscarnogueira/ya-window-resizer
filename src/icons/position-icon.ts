@@ -58,6 +58,45 @@ export function positionIcon(position: Position, color: string): string {
   return `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">${rects}</svg>`;
 }
 
+/** Clockwise circular arrow (refresh glyph) centered on the canvas. */
+function circularArrow(color: string): string {
+  const cx = 72, cy = 72, R = 30, startDeg = 135, sweepDeg = 290, steps = 48, sw = 8;
+  const pts: Array<[number, number]> = [];
+  for (let i = 0; i <= steps; i++) {
+    const th = ((startDeg + (sweepDeg * i) / steps) * Math.PI) / 180;
+    pts.push([cx + R * Math.cos(th), cy + R * Math.sin(th)]);
+  }
+  const d = "M " + pts.map((p) => `${n(p[0])} ${n(p[1])}`).join(" L ");
+  const endTh = ((startDeg + sweepDeg) * Math.PI) / 180;
+  const dx = -Math.sin(endTh), dy = Math.cos(endTh); // clockwise tangent at the tip
+  const px = -dy, py = dx; // perpendicular
+  const p = pts[pts.length - 1];
+  const ah = 15;
+  const tip: [number, number] = [p[0] + dx * ah * 0.5, p[1] + dy * ah * 0.5];
+  const b1: [number, number] = [tip[0] - dx * ah + px * ah * 0.55, tip[1] - dy * ah + py * ah * 0.55];
+  const b2: [number, number] = [tip[0] - dx * ah - px * ah * 0.55, tip[1] - dy * ah - py * ah * 0.55];
+  return (
+    `<path d="${d}" fill="none" stroke="${color}" stroke-width="${sw}" stroke-linecap="round"/>` +
+    `<path d="M ${n(tip[0])} ${n(tip[1])} L ${n(b1[0])} ${n(b1[1])} L ${n(b2[0])} ${n(b2[1])} Z" fill="${color}"/>`
+  );
+}
+
+/** SVG diagram (144x144) for Cycle Corners: four dimmed corners with a
+ *  clockwise circular arrow in `color`. */
+export function cycleCornersIcon(color: string): string {
+  const corners: Array<[number, number]> = [[0, 0], [0.5, 0], [0, 0.5], [0.5, 0.5]];
+  const tiles = corners
+    .map(([fx, fy]) => {
+      const x = OX + fx * OW + INSET;
+      const y = OY + fy * OH + INSET;
+      const w = 0.5 * OW - 2 * INSET;
+      const h = 0.5 * OH - 2 * INSET;
+      return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="6" fill="${color}" fill-opacity="0.22"/>`;
+    })
+    .join("");
+  return `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">${tiles}${circularArrow(color)}</svg>`;
+}
+
 /** SVG diagram (144x144) for the Custom action: a free-floating box. */
 export function customIcon(color: string): string {
   return (

@@ -20,6 +20,15 @@
       "PropertyInspectorPath": "ui/custom.html",
       "Controllers": ["Keypad"],
       "States": [{ "Image": "imgs/actions/custom/key" }]
+    },
+    {
+      "Name": "Cycle Corners",
+      "UUID": "fyi.oz.yet-another-window-resizer.cycle-corners",
+      "Icon": "imgs/actions/cycle/icon",
+      "Tooltip": "Cycle the frontmost window clockwise through the four corners.",
+      "PropertyInspectorPath": "ui/cycle.html",
+      "Controllers": ["Keypad"],
+      "States": [{ "Image": "imgs/actions/cycle/key" }]
     }
   ],
   "Category": "Yet Another Window Resizer",

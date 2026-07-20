@@ -65,6 +65,8 @@ const targets = [
   ["actions/position/key", [80, 170, 120]],
   ["actions/custom/icon", [200, 140, 70]],
   ["actions/custom/key", [200, 140, 70]],
+  ["actions/cycle/icon", [130, 110, 220]],
+  ["actions/cycle/key", [130, 110, 220]],
 ];
 
 for (const [rel, rgb] of targets) {
