@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { computeFrame } from "../../src/geometry/compute-frame";
+import { computeFrame, computeCenter, computeCustom } from "../../src/geometry/compute-frame";
 import type { Screen } from "../../src/geometry/types";
 
 const screen: Screen = {
@@ -55,5 +55,36 @@ describe("computeFrame — thirds, corners, maximize", () => {
   });
   it("maximize fills the usable area minus screenGap on all sides", () => {
     expect(computeFrame("maximize", screen, { screenGap: 15, windowGap: 99 })).toEqual({ x: 15, y: 15, w: 1770, h: 1050 });
+  });
+});
+
+describe("computeCenter", () => {
+  const screen: Screen = {
+    frame: { x: 0, y: 0, w: 1920, h: 1080 },
+    visibleFrame: { x: 0, y: 0, w: 1920, h: 1080 },
+  };
+  const gaps = { screenGap: 10, windowGap: 0 };
+  it("centers the window keeping its size", () => {
+    const win = { x: 0, y: 0, w: 800, h: 600 };
+    expect(computeCenter(win, screen, gaps)).toEqual({ x: 560, y: 240, w: 800, h: 600 });
+  });
+  it("clamps an oversized window to usable area minus screenGap", () => {
+    const win = { x: 0, y: 0, w: 5000, h: 5000 };
+    expect(computeCenter(win, screen, gaps)).toEqual({ x: 10, y: 10, w: 1900, h: 1060 });
+  });
+});
+
+describe("computeCustom", () => {
+  const screen: Screen = {
+    frame: { x: 0, y: 0, w: 1000, h: 1000 },
+    visibleFrame: { x: 0, y: 100, w: 1000, h: 900 },
+  };
+  it("percent is measured from the usable-area origin", () => {
+    const r = computeCustom({ x: 10, y: 0, w: 50, h: 50, unit: "percent" }, screen);
+    expect(r).toEqual({ x: 100, y: 100, w: 500, h: 450 });
+  });
+  it("pixels are literal offsets into the usable area, clamped", () => {
+    const r = computeCustom({ x: 950, y: 0, w: 400, h: 100, unit: "pixels" }, screen);
+    expect(r).toEqual({ x: 600, y: 100, w: 400, h: 100 });
   });
 });

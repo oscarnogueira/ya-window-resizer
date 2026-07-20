@@ -1,4 +1,4 @@
-import type { Gaps, Position, Rect, Screen } from "./types";
+import type { CustomFrame, Gaps, Position, Rect, Screen } from "./types";
 
 type EdgeKind = "screen" | "split";
 
@@ -45,4 +45,49 @@ export function computeFrame(position: Position, screen: Screen, gaps: Gaps): Re
     throw new Error("center handled by computeCenter");
   }
   return fromCell(CELLS[position], area, gaps);
+}
+
+function clampRect(r: Rect, area: Rect): Rect {
+  const w = Math.min(r.w, area.w);
+  const h = Math.min(r.h, area.h);
+  const x = Math.min(Math.max(r.x, area.x), area.x + area.w - w);
+  const y = Math.min(Math.max(r.y, area.y), area.y + area.h - h);
+  return { x, y, w, h };
+}
+
+export function computeCenter(win: Rect, screen: Screen, gaps: Gaps): Rect {
+  const area = screen.visibleFrame;
+  const bounded: Rect = {
+    x: area.x + gaps.screenGap,
+    y: area.y + gaps.screenGap,
+    w: area.w - 2 * gaps.screenGap,
+    h: area.h - 2 * gaps.screenGap,
+  };
+  const w = Math.min(win.w, bounded.w);
+  const h = Math.min(win.h, bounded.h);
+  return {
+    x: Math.round(bounded.x + (bounded.w - w) / 2),
+    y: Math.round(bounded.y + (bounded.h - h) / 2),
+    w,
+    h,
+  };
+}
+
+export function computeCustom(custom: CustomFrame, screen: Screen): Rect {
+  const area = screen.visibleFrame;
+  const raw: Rect =
+    custom.unit === "percent"
+      ? {
+          x: area.x + (custom.x / 100) * area.w,
+          y: area.y + (custom.y / 100) * area.h,
+          w: (custom.w / 100) * area.w,
+          h: (custom.h / 100) * area.h,
+        }
+      : {
+          x: area.x + custom.x,
+          y: area.y + custom.y,
+          w: custom.w,
+          h: custom.h,
+        };
+  return clampRect(raw, area);
 }
