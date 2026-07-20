@@ -3,6 +3,7 @@ import type { Gaps, Position, Unit } from "./geometry/types";
 export interface GlobalSettings {
   screenGap?: number;
   windowGap?: number;
+  accentColor?: string;
 }
 
 // NB: these are `type` aliases, not `interface`s, so they satisfy the SDK's
@@ -32,3 +33,9 @@ export function resolveGaps(
   }
   return { screenGap: global.screenGap ?? 0, windowGap: global.windowGap ?? 0 };
 }
+
+export const DEFAULT_ACCENT = "#3B99FC";
+/** Mutable cache of the accent color; updated only by the global-settings
+ * subscription in plugin.ts, read by the action renderers. Avoids re-fetching
+ * settings inside event handlers (which would loop). */
+export const accent = { color: DEFAULT_ACCENT };
