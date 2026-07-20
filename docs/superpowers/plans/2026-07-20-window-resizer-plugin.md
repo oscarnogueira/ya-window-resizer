@@ -73,7 +73,7 @@ stream-deck-window-resizer/
     "test": "vitest run",
     "test:watch": "vitest",
     "build:native": "node-gyp rebuild && mkdir -p com.oz.window-resizer.sdPlugin && cp build/Release/window.node com.oz.window-resizer.sdPlugin/window.node",
-    "build:js": "esbuild src/plugin.ts --bundle --platform=node --format=esm --outfile=com.oz.window-resizer.sdPlugin/bin/plugin.js --external:./window.node",
+    "build:js": "esbuild src/plugin.ts --bundle --platform=node --format=esm --outfile=com.oz.window-resizer.sdPlugin/bin/plugin.js --external:*.node",
     "build": "npm run build:native && npm run build:js",
     "smoke": "node scripts/smoke-native.mjs",
     "pack": "streamdeck pack com.oz.window-resizer.sdPlugin"
@@ -712,7 +712,9 @@ Build a native addon that compiles and loads before wiring the real Accessibilit
       "cflags_cc!": [ "-fno-exceptions" ],
       "xcode_settings": {
         "OTHER_CFLAGS": [ "-ObjC++" ],
-        "MACOSX_DEPLOYMENT_TARGET": "11.0"
+        "MACOSX_DEPLOYMENT_TARGET": "11.0",
+        "ARCHS": [ "x86_64", "arm64" ],
+        "ONLY_ACTIVE_ARCH": "NO"
       },
       "link_settings": {
         "libraries": [
@@ -1385,7 +1387,9 @@ Run:
 ln -sf "$(pwd)/com.oz.window-resizer.sdPlugin" \
   "$HOME/Library/Application Support/com.elgato.StreamDeck/Plugins/com.oz.window-resizer.sdPlugin"
 ```
-Then restart the Stream Deck app.
+Then restart the Stream Deck app. If the plugin does not appear after restart,
+some Stream Deck versions reject a symlink — fall back to `streamdeck link
+com.oz.window-resizer.sdPlugin` or copy the directory in place of the symlink.
 
 - [ ] **Step 3: Manual end-to-end test (use @superpowers:verification-before-completion)**
 
