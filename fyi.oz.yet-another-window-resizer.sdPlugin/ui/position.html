@@ -30,10 +30,26 @@
     </sdpi-item>
 
     <sdpi-item label="Screen gap (px)">
-      <sdpi-textfield setting="screenGap" type="number" min="0" max="100" default="4"></sdpi-textfield>
+      <sdpi-textfield setting="screenGap" type="number" min="0" max="100" placeholder="4"></sdpi-textfield>
     </sdpi-item>
     <sdpi-item label="Window gap (px)">
-      <sdpi-textfield setting="windowGap" type="number" min="0" max="100" default="4"></sdpi-textfield>
+      <sdpi-textfield setting="windowGap" type="number" min="0" max="100" placeholder="4"></sdpi-textfield>
     </sdpi-item>
+
+    <script>
+      // sdpi-textfield has no `default` attribute, so seed the gap fields with
+      // 4px on first load (only when unset) — the value then shows and persists.
+      (async function () {
+        const client = SDPIComponents.streamDeckClient;
+        const res = await client.getSettings();
+        const settings = res?.settings ?? res?.payload?.settings ?? {};
+        const patch = {};
+        if (settings.screenGap === undefined || settings.screenGap === "") patch.screenGap = 4;
+        if (settings.windowGap === undefined || settings.windowGap === "") patch.windowGap = 4;
+        if (Object.keys(patch).length > 0) {
+          await client.setSettings({ ...settings, ...patch });
+        }
+      })();
+    </script>
   </body>
 </html>
