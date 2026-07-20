@@ -1432,6 +1432,47 @@ git commit -m "chore: end-to-end verified build; packaging via streamdeck CLI"
 
 ---
 
+## Task 16: Dynamic per-position key icons with a customizable accent color
+
+Generate the button artwork procedurally (rounded-rect region diagrams) instead
+of shipping static art, and let the user pick the accent color in the Property
+Inspector. The Position button renders the target region on its own key; the
+color is a global setting applied across all buttons.
+
+**Files:**
+- Create: `src/icons/position-icon.ts`, `tests/icons/position-icon.test.ts`
+- Modify: `src/settings.ts` (add `accentColor`, `DEFAULT_ACCENT`, shared `accent` holder), `src/actions/position-action.ts`, `src/actions/custom-action.ts`, `src/plugin.ts`, `ui/position.html`, `ui/custom.html`
+
+**Loop hazard (critical):** in the SDK, both `getSettings()` and
+`getGlobalSettings()` *emit* their `onDidReceive…` events. So an event handler
+that re-fetches settings can trigger an infinite loop. The design avoids this:
+the accent color is held in a mutable module cache (`accent.color`); event
+handlers render using `ev.payload.settings` + the cache and NEVER re-fetch. Only
+the `onDidReceiveGlobalSettings` subscription updates the cache (from
+`ev.settings`) and re-renders.
+
+- [ ] **Step 1 (TDD): `positionIcon` / `customIcon` / `svgToDataUri`** — pure
+  functions in `src/icons/position-icon.ts`. `positionIcon(position, color)`
+  maps a fractional cell to a 112×80 screen frame (origin 16,32) inside a 144
+  canvas, drawing a dim screen rect (`fill-opacity="0.22"`) plus a solid active
+  rect (inset 3px, `rx=6`). Covers all 15 positions incl. two-thirds and center.
+  Test: color appears in output; `left-half` active `x="19"`, `right-half`
+  `x="75"`, `maximize` `width="106"`, `center` `width="61.2"`; distinct
+  positions differ; `svgToDataUri` yields `data:image/svg+xml;base64,`.
+- [ ] **Step 2:** `settings.ts` — add `accentColor?: string` to `GlobalSettings`;
+  export `DEFAULT_ACCENT = "#3B99FC"` and `export const accent = { color: DEFAULT_ACCENT }`.
+- [ ] **Step 3:** `position-action.ts` — `renderKey(action, settings)` uses
+  `accent.color` (no fetch); `onWillAppear`/`onDidReceiveSettings` call it with
+  `ev.payload.settings`; `refreshAll()` iterates `this.actions`, `getSettings()`,
+  renders.
+- [ ] **Step 4:** `custom-action.ts` — analogous, using `customIcon(accent.color)`.
+- [ ] **Step 5:** `plugin.ts` — subscribe `onDidReceiveGlobalSettings` to update
+  `accent.color` from `ev.settings` and call `refreshAll()` on both actions;
+  after `connect()`, prime once with `getGlobalSettings()`.
+- [ ] **Step 6:** PIs — add `<sdpi-color global setting="accentColor" default="#3B99FC">`
+  to both `position.html` and `custom.html`.
+- [ ] **Step 7:** `npx tsc --noEmit`, `npx vitest run`, `npm run build:js`, load-check. Commit.
+
 ## Notes for the implementer
 
 - **TDD discipline:** For every geometry/settings task, watch the test fail before implementing (@superpowers:test-driven-development). The native and SDK-wiring tasks are verified by smoke script and manual E2E instead of unit tests, because they cross the OS/SDK boundary.
