@@ -29,27 +29,21 @@
       <sdpi-color global setting="accentColor" default="#3B99FC"></sdpi-color>
     </sdpi-item>
 
-    <!-- Global gaps: the slider and the number field bind to the same setting,
-         so editing either one updates the other. -->
     <sdpi-item label="Screen gap (px)">
-      <sdpi-range global setting="screenGap" min="0" max="100" default="0" step="1"></sdpi-range>
-      <sdpi-textfield global setting="screenGap" type="number" min="0" max="100"></sdpi-textfield>
+      <sdpi-textfield global setting="screenGap" type="number" min="0" max="100" default="0"></sdpi-textfield>
     </sdpi-item>
     <sdpi-item label="Window gap (px)">
-      <sdpi-range global setting="windowGap" min="0" max="100" default="0" step="1"></sdpi-range>
-      <sdpi-textfield global setting="windowGap" type="number" min="0" max="100"></sdpi-textfield>
+      <sdpi-textfield global setting="windowGap" type="number" min="0" max="100" default="0"></sdpi-textfield>
     </sdpi-item>
 
     <sdpi-item label="Override offset">
       <sdpi-checkbox setting="useCustomOffset"></sdpi-checkbox>
     </sdpi-item>
     <sdpi-item label="This button screen gap">
-      <sdpi-range setting="screenGap" min="0" max="100" default="0" step="1"></sdpi-range>
-      <sdpi-textfield setting="screenGap" type="number" min="0" max="100"></sdpi-textfield>
+      <sdpi-textfield setting="screenGap" type="number" min="0" max="100" default="0"></sdpi-textfield>
     </sdpi-item>
     <sdpi-item label="This button window gap">
-      <sdpi-range setting="windowGap" min="0" max="100" default="0" step="1"></sdpi-range>
-      <sdpi-textfield setting="windowGap" type="number" min="0" max="100"></sdpi-textfield>
+      <sdpi-textfield setting="windowGap" type="number" min="0" max="100" default="0"></sdpi-textfield>
     </sdpi-item>
   </body>
 </html>
