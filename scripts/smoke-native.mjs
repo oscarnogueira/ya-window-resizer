@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
-const w = require("../com.oz.window-resizer.sdPlugin/window.node");
+const w = require("../fyi.oz.yet-another-window-resizer.sdPlugin/window.node");
 
 console.log("trusted:", w.isTrusted());
 console.log("screens:", JSON.stringify(w.getScreens(), null, 2));

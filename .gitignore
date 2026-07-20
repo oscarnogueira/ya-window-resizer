@@ -1,7 +1,7 @@
 node_modules/
 *.streamDeckPlugin
 build/
-com.oz.window-resizer.sdPlugin/window.node
+fyi.oz.yet-another-window-resizer.sdPlugin/window.node
 .DS_Store
-com.oz.window-resizer.sdPlugin/bin/
-com.oz.window-resizer.sdPlugin/logs/
+fyi.oz.yet-another-window-resizer.sdPlugin/bin/
+fyi.oz.yet-another-window-resizer.sdPlugin/logs/

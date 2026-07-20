@@ -55,7 +55,7 @@ function makePng(size, [r, g, b]) {
   ]);
 }
 
-const base = new URL("../com.oz.window-resizer.sdPlugin/imgs/", import.meta.url).pathname;
+const base = new URL("../fyi.oz.yet-another-window-resizer.sdPlugin/imgs/", import.meta.url).pathname;
 
 // [relative path (no ext), rgb]
 const targets = [

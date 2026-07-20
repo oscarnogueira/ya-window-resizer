@@ -12,7 +12,7 @@ function num(v: unknown, fallback: number): number {
   return Number.isFinite(n) ? n : fallback;
 }
 
-@action({ UUID: "com.oz.window-resizer.custom" })
+@action({ UUID: "fyi.oz.yet-another-window-resizer.custom" })
 export class CustomAction extends SingletonAction<CustomSettings> {
   override async onKeyDown(ev: KeyDownEvent<CustomSettings>): Promise<void> {
     if (!windowApi.isTrusted()) {

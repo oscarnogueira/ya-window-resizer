@@ -8,7 +8,7 @@ import { positionIcon, svgToDataUri } from "../icons/position-icon";
 import { accent } from "../settings";
 import type { WillAppearEvent, DidReceiveSettingsEvent, KeyAction, DialAction } from "@elgato/streamdeck";
 
-@action({ UUID: "com.oz.window-resizer.position" })
+@action({ UUID: "fyi.oz.yet-another-window-resizer.position" })
 export class PositionAction extends SingletonAction<PositionSettings> {
   override async onKeyDown(ev: KeyDownEvent<PositionSettings>): Promise<void> {
     if (!windowApi.isTrusted()) {
