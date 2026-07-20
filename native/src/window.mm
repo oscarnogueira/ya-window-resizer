@@ -10,18 +10,29 @@ Napi::Boolean IsTrusted(const Napi::CallbackInfo& info) {
   return Napi::Boolean::New(info.Env(), AXTrusted());
 }
 
-// Returns { x, y, w, h, pid } for the focused window of the frontmost app,
-// or null if unavailable. Coordinates are top-left origin (AX native).
+// Returns { x, y, w, h, pid, app, wsApp } for the focused window of the app
+// the user is *currently* interacting with, or null if unavailable.
+// Coordinates are top-left origin (AX native).
+//
+// We resolve the focused app via the system-wide Accessibility element rather
+// than NSWorkspace.frontmostApplication: the latter is updated through AppKit
+// activation notifications that require a running AppKit run loop, which a Node
+// process never pumps — so it returns a STALE app (whatever was frontmost when
+// the plugin launched). The AX query is a live IPC lookup with no such
+// dependency. `wsApp` reports the (suspect) NSWorkspace value for diagnostics.
 Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   if (!AXTrusted()) return env.Null();
 
-  NSRunningApplication* app = [[NSWorkspace sharedWorkspace] frontmostApplication];
-  if (app == nil) return env.Null();
-  pid_t pid = app.processIdentifier;
+  AXUIElementRef sys = AXUIElementCreateSystemWide();
+  AXUIElementRef appEl = NULL;
+  AXError appErr = AXUIElementCopyAttributeValue(
+      sys, kAXFocusedApplicationAttribute, (CFTypeRef*)&appEl);
+  CFRelease(sys);
+  if (appErr != kAXErrorSuccess || appEl == NULL) return env.Null();
 
-  AXUIElementRef appEl = AXUIElementCreateApplication(pid);
-  if (appEl == NULL) return env.Null();
+  pid_t pid = 0;
+  AXUIElementGetPid(appEl, &pid);
 
   AXUIElementRef window = NULL;
   AXError err = AXUIElementCopyAttributeValue(
@@ -44,12 +55,20 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   CFRelease(window);
   CFRelease(appEl);
 
+  // App names for diagnostics: the live AX app vs the NSWorkspace value.
+  NSRunningApplication* axApp = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+  NSString* axName = (axApp && axApp.localizedName) ? axApp.localizedName : @"";
+  NSRunningApplication* wsApp = [[NSWorkspace sharedWorkspace] frontmostApplication];
+  NSString* wsName = (wsApp && wsApp.localizedName) ? wsApp.localizedName : @"";
+
   Napi::Object out = Napi::Object::New(env);
   out.Set("x", Napi::Number::New(env, pos.x));
   out.Set("y", Napi::Number::New(env, pos.y));
   out.Set("w", Napi::Number::New(env, size.width));
   out.Set("h", Napi::Number::New(env, size.height));
   out.Set("pid", Napi::Number::New(env, pid));
+  out.Set("app", Napi::String::New(env, axName.UTF8String));
+  out.Set("wsApp", Napi::String::New(env, wsName.UTF8String));
   return out;
 }
 
