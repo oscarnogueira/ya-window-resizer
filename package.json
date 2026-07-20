@@ -1,0 +1,26 @@
+{
+  "name": "stream-deck-window-resizer",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Position and resize the frontmost macOS window from a Stream Deck, with configurable gaps.",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build:native": "node-gyp rebuild && mkdir -p com.oz.window-resizer.sdPlugin && cp build/Release/window.node com.oz.window-resizer.sdPlugin/window.node",
+    "build:js": "esbuild src/plugin.ts --bundle --platform=node --format=esm --outfile=com.oz.window-resizer.sdPlugin/bin/plugin.js --external:*.node",
+    "build": "npm run build:native && npm run build:js",
+    "smoke": "node scripts/smoke-native.mjs",
+    "pack": "streamdeck pack com.oz.window-resizer.sdPlugin"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.4.0",
+    "node-gyp": "^10.0.0"
+  },
+  "dependencies": {
+    "@elgato/streamdeck": "^1.0.0",
+    "node-addon-api": "^8.0.0"
+  }
+}
