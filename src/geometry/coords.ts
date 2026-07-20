@@ -1,14 +1,15 @@
 import type { Rect } from "./types";
 
 /**
- * Convert a Cocoa (bottom-left origin, +y up) rect to a top-left origin
- * (+y down) rect. `globalHeight` is the total height of the desktop coordinate
- * space (max over screens of origin.y + height in Cocoa space).
+ * Convert a Cocoa (bottom-left origin, +y up) rect to a Quartz/AX top-left
+ * origin (+y down) rect. `primaryHeight` is the height of the PRIMARY display
+ * (NSScreen.screens[0]); the top-left space is anchored to the primary's
+ * top-left, so screens positioned above the primary yield a negative y.
  */
-export function cocoaRectToTopLeft(rect: Rect, globalHeight: number): Rect {
+export function cocoaRectToTopLeft(rect: Rect, primaryHeight: number): Rect {
   return {
     x: rect.x,
-    y: globalHeight - (rect.y + rect.h),
+    y: primaryHeight - (rect.y + rect.h),
     w: rect.w,
     h: rect.h,
   };
