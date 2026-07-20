@@ -27,7 +27,7 @@ export class PositionAction extends SingletonAction<PositionSettings> {
 
     const target =
       position === "center"
-        ? computeCenter(win, screen, gaps)
+        ? computeCenter(screen, gaps)
         : computeFrame(position, screen, gaps);
 
     const ok = windowApi.setWindowFrame(win.pid, target.x, target.y, target.w, target.h);

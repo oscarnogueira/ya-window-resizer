@@ -63,14 +63,26 @@ describe("computeCenter", () => {
     frame: { x: 0, y: 0, w: 1920, h: 1080 },
     visibleFrame: { x: 0, y: 0, w: 1920, h: 1080 },
   };
-  const gaps = { screenGap: 10, windowGap: 0 };
-  it("centers the window keeping its size", () => {
-    const win = { x: 0, y: 0, w: 800, h: 600 };
-    expect(computeCenter(win, screen, gaps)).toEqual({ x: 560, y: 240, w: 800, h: 600 });
+  it("fills the central 3x3 of a 5x5 grid, inset by screenGap", () => {
+    // 1/5..4/5 → x:384 w:1152, y:216 h:648; then inset screenGap=10 each side.
+    expect(computeCenter(screen, { screenGap: 10, windowGap: 0 })).toEqual({
+      x: 394, y: 226, w: 1132, h: 628,
+    });
   });
-  it("clamps an oversized window to usable area minus screenGap", () => {
-    const win = { x: 0, y: 0, w: 5000, h: 5000 };
-    expect(computeCenter(win, screen, gaps)).toEqual({ x: 10, y: 10, w: 1900, h: 1060 });
+  it("with zero gap is exactly the middle 60% on each axis", () => {
+    expect(computeCenter(screen, { screenGap: 0, windowGap: 0 })).toEqual({
+      x: 384, y: 216, w: 1152, h: 648,
+    });
+  });
+  it("respects a non-zero visibleFrame origin (menu bar)", () => {
+    const s: Screen = {
+      frame: { x: 0, y: 0, w: 1000, h: 1000 },
+      visibleFrame: { x: 0, y: 100, w: 1000, h: 900 },
+    };
+    // x = 200, y = 100 + 180 = 280, w = 600, h = 540
+    expect(computeCenter(s, { screenGap: 0, windowGap: 0 })).toEqual({
+      x: 200, y: 280, w: 600, h: 540,
+    });
   });
 });
 
@@ -105,7 +117,7 @@ describe("computeFrame / computeCenter — never returns negative dimensions", (
     expect(r.h).toBe(0);
   });
   it("computeCenter with oversized screenGap clamps to 0, not negative", () => {
-    const r = computeCenter({ x: 0, y: 0, w: 800, h: 600 }, small, { screenGap: 500, windowGap: 0 });
+    const r = computeCenter(small, { screenGap: 500, windowGap: 0 });
     expect(r.w).toBe(0);
     expect(r.h).toBe(0);
   });

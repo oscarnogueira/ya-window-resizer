@@ -52,22 +52,20 @@ function clampRect(r: Rect, area: Rect): Rect {
   return { x, y, w, h };
 }
 
-export function computeCenter(win: Rect, screen: Screen, gaps: Gaps): Rect {
+/**
+ * Center: the window fills the central 3x3 block of a 5x5 grid over the usable
+ * area (i.e. the middle 60% on each axis, from 1/5 to 4/5), inset by screenGap
+ * on all four sides. Unlike the old behaviour it resizes rather than keeping the
+ * window's current size.
+ */
+export function computeCenter(screen: Screen, gaps: Gaps): Rect {
   const area = screen.visibleFrame;
-  const bounded: Rect = {
-    x: area.x + gaps.screenGap,
-    y: area.y + gaps.screenGap,
-    w: area.w - 2 * gaps.screenGap,
-    h: area.h - 2 * gaps.screenGap,
-  };
-  const w = Math.min(win.w, Math.max(0, bounded.w));
-  const h = Math.min(win.h, Math.max(0, bounded.h));
-  return {
-    x: bounded.x + (bounded.w - w) / 2,
-    y: bounded.y + (bounded.h - h) / 2,
-    w,
-    h,
-  };
+  const g = gaps.screenGap;
+  const x = area.x + area.w / 5 + g;
+  const y = area.y + area.h / 5 + g;
+  const w = (area.w * 3) / 5 - 2 * g;
+  const h = (area.h * 3) / 5 - 2 * g;
+  return { x, y, w: Math.max(0, w), h: Math.max(0, h) };
 }
 
 export function computeCustom(custom: CustomFrame, screen: Screen): Rect {
