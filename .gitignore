@@ -3,3 +3,5 @@ node_modules/
 build/
 com.oz.window-resizer.sdPlugin/window.node
 .DS_Store
+com.oz.window-resizer.sdPlugin/bin/
+com.oz.window-resizer.sdPlugin/logs/
