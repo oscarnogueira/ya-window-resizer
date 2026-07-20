@@ -1,4 +1,5 @@
 #include <napi.h>
+#include <string>
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreGraphics/CoreGraphics.h>
@@ -14,7 +15,10 @@ Napi::Boolean IsTrusted(const Napi::CallbackInfo& info) {
 // Frontmost on-screen normal window's owner pid (and name), via CGWindowList.
 // This is a live query to the window server — no AppKit run loop needed — and
 // does not require Screen Recording permission (only window *titles* do).
-static pid_t FrontmostCGPid(NSString** outName) {
+// The name is copied into a std::string WHILE the array (which owns it) is
+// still alive; storing the NSString* and using it after CFRelease would be a
+// use-after-free under manual reference counting.
+static pid_t FrontmostCGPid(std::string& outName) {
   pid_t result = 0;
   CFArrayRef list = CGWindowListCopyWindowInfo(
       kCGWindowListOptionOnScreenOnly | kCGWindowListExcludeDesktopElements, kCGNullWindowID);
@@ -27,12 +31,22 @@ static pid_t FrontmostCGPid(NSString** outName) {
       NSNumber* pidNum = w[(id)kCGWindowOwnerPID];
       if (pidNum == nil) continue;
       result = (pid_t)pidNum.intValue;
-      if (outName) *outName = w[(id)kCGWindowOwnerName] ?: @"";
+      NSString* nm = w[(id)kCGWindowOwnerName];
+      if (nm != nil && nm.UTF8String != NULL) outName = std::string(nm.UTF8String);
       break;
     }
     CFRelease(list);
   }
   return result;
+}
+
+// Localized app name for a pid, copied into a std::string (safe past pool drain).
+static std::string AppNameForPid(pid_t pid) {
+  NSRunningApplication* app = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
+  if (app != nil && app.localizedName != nil && app.localizedName.UTF8String != NULL) {
+    return std::string(app.localizedName.UTF8String);
+  }
+  return std::string();
 }
 
 // Returns { ok, x, y, w, h, pid, app, ...diagnostics } for the focused window
@@ -49,27 +63,36 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   out.Set("ok", Napi::Boolean::New(env, false));
   if (!AXTrusted()) return out;
 
-  // --- Source 1: CGWindowList (primary, live) ---
-  NSString* cgName = @"";
-  pid_t cgPid = FrontmostCGPid(&cgName);
+  // Gather Cocoa/CF values inside an autorelease pool; copy anything we keep
+  // into plain C++ types so nothing dangles once the pool drains.
+  std::string cgName, wsName;
+  pid_t cgPid = 0, wsPid = 0, axPid = 0;
+  AXError axAppErr = kAXErrorSuccess;
+  @autoreleasepool {
+    // Source 1: CGWindowList (primary, live).
+    cgPid = FrontmostCGPid(cgName);
 
-  // --- Source 2: NSWorkspace (suspected stale) ---
-  NSRunningApplication* wsApp = [[NSWorkspace sharedWorkspace] frontmostApplication];
-  pid_t wsPid = wsApp ? wsApp.processIdentifier : 0;
-  NSString* wsName = (wsApp && wsApp.localizedName) ? wsApp.localizedName : @"";
+    // Source 2: NSWorkspace (suspected stale).
+    NSRunningApplication* wsApp = [[NSWorkspace sharedWorkspace] frontmostApplication];
+    if (wsApp != nil) {
+      wsPid = wsApp.processIdentifier;
+      if (wsApp.localizedName != nil && wsApp.localizedName.UTF8String != NULL) {
+        wsName = std::string(wsApp.localizedName.UTF8String);
+      }
+    }
 
-  // --- Source 3: system-wide AX focused application (with error code) ---
-  AXUIElementRef sys = AXUIElementCreateSystemWide();
-  AXUIElementRef axApp = NULL;
-  AXError axAppErr = AXUIElementCopyAttributeValue(sys, kAXFocusedApplicationAttribute, (CFTypeRef*)&axApp);
-  CFRelease(sys);
-  pid_t axPid = 0;
-  if (axAppErr == kAXErrorSuccess && axApp) AXUIElementGetPid(axApp, &axPid);
-  if (axApp) CFRelease(axApp);
+    // Source 3: system-wide AX focused application (with error code).
+    AXUIElementRef sys = AXUIElementCreateSystemWide();
+    AXUIElementRef axApp = NULL;
+    axAppErr = AXUIElementCopyAttributeValue(sys, kAXFocusedApplicationAttribute, (CFTypeRef*)&axApp);
+    CFRelease(sys);
+    if (axAppErr == kAXErrorSuccess && axApp != NULL) AXUIElementGetPid(axApp, &axPid);
+    if (axApp != NULL) CFRelease(axApp);
+  }
 
-  out.Set("cgApp", Napi::String::New(env, cgName.UTF8String));
+  out.Set("cgApp", Napi::String::New(env, cgName));
   out.Set("cgPid", Napi::Number::New(env, cgPid));
-  out.Set("wsApp", Napi::String::New(env, wsName.UTF8String));
+  out.Set("wsApp", Napi::String::New(env, wsName));
   out.Set("wsPid", Napi::Number::New(env, wsPid));
   out.Set("axPid", Napi::Number::New(env, axPid));
   out.Set("axAppErr", Napi::Number::New(env, (int)axAppErr));
@@ -103,15 +126,18 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   CFRelease(window);
   CFRelease(appEl);
 
-  NSRunningApplication* chosen = [NSRunningApplication runningApplicationWithProcessIdentifier:pid];
-  NSString* chosenName = (chosen && chosen.localizedName) ? chosen.localizedName : cgName;
+  std::string chosenName;
+  @autoreleasepool {
+    chosenName = AppNameForPid(pid);
+  }
+  if (chosenName.empty()) chosenName = cgName;
 
   out.Set("ok", Napi::Boolean::New(env, true));
   out.Set("x", Napi::Number::New(env, pos.x));
   out.Set("y", Napi::Number::New(env, pos.y));
   out.Set("w", Napi::Number::New(env, size.width));
   out.Set("h", Napi::Number::New(env, size.height));
-  out.Set("app", Napi::String::New(env, chosenName.UTF8String));
+  out.Set("app", Napi::String::New(env, chosenName));
   return out;
 }
 
