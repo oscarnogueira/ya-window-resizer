@@ -53,9 +53,75 @@ Napi::Value GetFrontmostWindow(const Napi::CallbackInfo& info) {
   return out;
 }
 
+// Returns [{ frame:{x,y,w,h}, visibleFrame:{x,y,w,h} }] in TOP-LEFT origin.
+Napi::Value GetScreens(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  NSArray<NSScreen*>* screens = [NSScreen screens];
+
+  CGFloat globalHeight = 0;
+  for (NSScreen* s in screens) {
+    CGFloat top = s.frame.origin.y + s.frame.size.height;
+    if (top > globalHeight) globalHeight = top;
+  }
+
+  auto toTopLeft = [&](NSRect r) {
+    Napi::Object o = Napi::Object::New(env);
+    o.Set("x", Napi::Number::New(env, r.origin.x));
+    o.Set("y", Napi::Number::New(env, globalHeight - (r.origin.y + r.size.height)));
+    o.Set("w", Napi::Number::New(env, r.size.width));
+    o.Set("h", Napi::Number::New(env, r.size.height));
+    return o;
+  };
+
+  Napi::Array arr = Napi::Array::New(env, screens.count);
+  for (NSUInteger i = 0; i < screens.count; i++) {
+    NSScreen* s = screens[i];
+    Napi::Object o = Napi::Object::New(env);
+    o.Set("frame", toTopLeft(s.frame));
+    o.Set("visibleFrame", toTopLeft(s.visibleFrame));
+    arr.Set(i, o);
+  }
+  return arr;
+}
+
+// setWindowFrame(pid, x, y, w, h) -> bool. Applies to the focused window of pid.
+Napi::Boolean SetWindowFrame(const Napi::CallbackInfo& info) {
+  Napi::Env env = info.Env();
+  if (!AXTrusted() || info.Length() < 5) return Napi::Boolean::New(env, false);
+
+  pid_t pid = (pid_t)info[0].As<Napi::Number>().Int32Value();
+  CGPoint pos = CGPointMake(info[1].As<Napi::Number>().DoubleValue(),
+                            info[2].As<Napi::Number>().DoubleValue());
+  CGSize size = CGSizeMake(info[3].As<Napi::Number>().DoubleValue(),
+                           info[4].As<Napi::Number>().DoubleValue());
+
+  AXUIElementRef appEl = AXUIElementCreateApplication(pid);
+  if (appEl == NULL) return Napi::Boolean::New(env, false);
+
+  AXUIElementRef window = NULL;
+  if (AXUIElementCopyAttributeValue(appEl, kAXFocusedWindowAttribute,
+                                    (CFTypeRef*)&window) != kAXErrorSuccess || window == NULL) {
+    CFRelease(appEl);
+    return Napi::Boolean::New(env, false);
+  }
+
+  AXValueRef sizeVal = AXValueCreate((AXValueType)kAXValueCGSizeType, &size);
+  AXValueRef posVal = AXValueCreate((AXValueType)kAXValueCGPointType, &pos);
+  AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeVal);
+  AXUIElementSetAttributeValue(window, kAXPositionAttribute, posVal);
+  AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeVal);
+  CFRelease(sizeVal);
+  CFRelease(posVal);
+  CFRelease(window);
+  CFRelease(appEl);
+  return Napi::Boolean::New(env, true);
+}
+
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
   exports.Set("isTrusted", Napi::Function::New(env, IsTrusted));
   exports.Set("getFrontmostWindow", Napi::Function::New(env, GetFrontmostWindow));
+  exports.Set("getScreens", Napi::Function::New(env, GetScreens));
+  exports.Set("setWindowFrame", Napi::Function::New(env, SetWindowFrame));
   return exports;
 }
 
