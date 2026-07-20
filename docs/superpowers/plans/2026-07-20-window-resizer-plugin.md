@@ -86,7 +86,7 @@ stream-deck-window-resizer/
     "node-gyp": "^10.0.0"
   },
   "dependencies": {
-    "@elgato/streamdeck": "^1.0.0",
+    "@elgato/streamdeck": "^2.1.0",
     "node-addon-api": "^8.0.0"
   }
 }
@@ -1195,11 +1195,13 @@ export class CustomAction extends SingletonAction<CustomSettings> {
 - [ ] **Step 3: Create `src/plugin.ts`**
 
 ```ts
-import streamDeck, { LogLevel } from "@elgato/streamdeck";
+import streamDeck from "@elgato/streamdeck";
 import { PositionAction } from "./actions/position-action";
 import { CustomAction } from "./actions/custom-action";
 
-streamDeck.logger.setLevel(LogLevel.INFO);
+// In @elgato/streamdeck v2, LogLevel is a string union ("error"|"warn"|"info"|...),
+// not an exported enum. Pass the string directly.
+streamDeck.logger.setLevel("info");
 
 streamDeck.actions.registerAction(new PositionAction());
 streamDeck.actions.registerAction(new CustomAction());

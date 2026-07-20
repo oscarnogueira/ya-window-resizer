@@ -20,7 +20,7 @@
     "node-gyp": "^10.0.0"
   },
   "dependencies": {
-    "@elgato/streamdeck": "^1.0.0",
+    "@elgato/streamdeck": "^2.1.0",
     "node-addon-api": "^8.0.0"
   }
 }
