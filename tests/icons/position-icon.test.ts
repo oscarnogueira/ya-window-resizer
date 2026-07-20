@@ -79,14 +79,15 @@ describe("cycleCornersIcon", () => {
 });
 
 describe("cycleSidesIcon / cycleTopBottomIcon", () => {
-  it("draws two dimmed half tiles plus a circular arrow", () => {
+  it("draws two dimmed half tiles plus a double-headed arrow (shaft + 2 heads)", () => {
     for (const svg of [cycleSidesIcon("#ffffff"), cycleTopBottomIcon("#ffffff")]) {
       expect(rectCount(svg)).toBe(2);
       expect((svg.match(/fill-opacity="0.22"/g) ?? []).length).toBe(2);
       expect(svg).toContain("stroke=");
+      expect((svg.match(/<path/g) ?? []).length).toBe(3); // shaft + 2 arrowheads
     }
   });
-  it("sides and top/bottom render differently", () => {
+  it("sides and top/bottom render differently (horizontal vs vertical)", () => {
     expect(cycleSidesIcon("#fff")).not.toEqual(cycleTopBottomIcon("#fff"));
   });
 });
