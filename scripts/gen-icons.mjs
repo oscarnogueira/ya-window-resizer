@@ -67,6 +67,10 @@ const targets = [
   ["actions/custom/key", [200, 140, 70]],
   ["actions/cycle/icon", [130, 110, 220]],
   ["actions/cycle/key", [130, 110, 220]],
+  ["actions/cycle-sides/icon", [110, 150, 220]],
+  ["actions/cycle-sides/key", [110, 150, 220]],
+  ["actions/cycle-top-bottom/icon", [150, 130, 210]],
+  ["actions/cycle-top-bottom/key", [150, 130, 210]],
 ];
 
 for (const [rel, rgb] of targets) {

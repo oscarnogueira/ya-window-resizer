@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { positionIcon, customIcon, cycleCornersIcon, svgToDataUri } from "../../src/icons/position-icon";
+import {
+  positionIcon,
+  customIcon,
+  cycleCornersIcon,
+  cycleSidesIcon,
+  cycleTopBottomIcon,
+  svgToDataUri,
+} from "../../src/icons/position-icon";
 
 const rectCount = (svg: string): number => (svg.match(/<rect/g) ?? []).length;
 
@@ -68,6 +75,19 @@ describe("cycleCornersIcon", () => {
     const svg = cycleCornersIcon("#ffffff");
     expect(svg).toContain("stroke=");
     expect(svg).toContain("<path");
+  });
+});
+
+describe("cycleSidesIcon / cycleTopBottomIcon", () => {
+  it("draws two dimmed half tiles plus a circular arrow", () => {
+    for (const svg of [cycleSidesIcon("#ffffff"), cycleTopBottomIcon("#ffffff")]) {
+      expect(rectCount(svg)).toBe(2);
+      expect((svg.match(/fill-opacity="0.22"/g) ?? []).length).toBe(2);
+      expect(svg).toContain("stroke=");
+    }
+  });
+  it("sides and top/bottom render differently", () => {
+    expect(cycleSidesIcon("#fff")).not.toEqual(cycleTopBottomIcon("#fff"));
   });
 });
 

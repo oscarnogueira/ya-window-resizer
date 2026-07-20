@@ -29,6 +29,24 @@
       "PropertyInspectorPath": "ui/cycle.html",
       "Controllers": ["Keypad"],
       "States": [{ "Image": "imgs/actions/cycle/key" }]
+    },
+    {
+      "Name": "Cycle Sides",
+      "UUID": "fyi.oz.yet-another-window-resizer.cycle-sides",
+      "Icon": "imgs/actions/cycle-sides/icon",
+      "Tooltip": "Cycle the frontmost window between the left and right halves.",
+      "PropertyInspectorPath": "ui/cycle.html",
+      "Controllers": ["Keypad"],
+      "States": [{ "Image": "imgs/actions/cycle-sides/key" }]
+    },
+    {
+      "Name": "Cycle Top/Bottom",
+      "UUID": "fyi.oz.yet-another-window-resizer.cycle-top-bottom",
+      "Icon": "imgs/actions/cycle-top-bottom/icon",
+      "Tooltip": "Cycle the frontmost window between the top and bottom halves.",
+      "PropertyInspectorPath": "ui/cycle.html",
+      "Controllers": ["Keypad"],
+      "States": [{ "Image": "imgs/actions/cycle-top-bottom/key" }]
     }
   ],
   "Category": "Yet Another Window Resizer",

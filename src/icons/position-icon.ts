@@ -81,20 +81,34 @@ function circularArrow(color: string): string {
   );
 }
 
-/** SVG diagram (144x144) for Cycle Corners: four dimmed corners with a
- *  clockwise circular arrow in `color`. */
-export function cycleCornersIcon(color: string): string {
-  const corners: Array<[number, number]> = [[0, 0], [0.5, 0], [0, 0.5], [0.5, 0.5]];
-  const tiles = corners
-    .map(([fx, fy]) => {
+/** SVG diagram (144x144) for a cycling action: the cells of the cycle set drawn
+ *  dimmed, with a clockwise circular arrow in `color` over them. */
+function cycleIcon(color: string, cells: Array<[number, number, number, number]>): string {
+  const tiles = cells
+    .map(([fx, fy, fw, fh]) => {
       const x = OX + fx * OW + INSET;
       const y = OY + fy * OH + INSET;
-      const w = 0.5 * OW - 2 * INSET;
-      const h = 0.5 * OH - 2 * INSET;
+      const w = fw * OW - 2 * INSET;
+      const h = fh * OH - 2 * INSET;
       return `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="6" fill="${color}" fill-opacity="0.22"/>`;
     })
     .join("");
   return `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">${tiles}${circularArrow(color)}</svg>`;
+}
+
+/** Cycle Corners: four dimmed quarter cells + circular arrow. */
+export function cycleCornersIcon(color: string): string {
+  return cycleIcon(color, [[0, 0, 0.5, 0.5], [0.5, 0, 0.5, 0.5], [0, 0.5, 0.5, 0.5], [0.5, 0.5, 0.5, 0.5]]);
+}
+
+/** Cycle Sides: left & right halves dimmed + circular arrow. */
+export function cycleSidesIcon(color: string): string {
+  return cycleIcon(color, [[0, 0, 0.5, 1], [0.5, 0, 0.5, 1]]);
+}
+
+/** Cycle Top/Bottom: top & bottom halves dimmed + circular arrow. */
+export function cycleTopBottomIcon(color: string): string {
+  return cycleIcon(color, [[0, 0, 1, 0.5], [0, 0.5, 1, 0.5]]);
 }
 
 /** SVG diagram (144x144) for the Custom action: a free-floating box. */
