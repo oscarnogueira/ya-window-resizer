@@ -67,10 +67,16 @@ small):
    - Two-thirds: left, right
    - Corners (quarters): top-left, top-right, bottom-left, bottom-right
    - Maximize (with offset applied)
-   - Center (keeps current size, only re-centers)
+   - Center (canonical: does not resize; re-centers the window in the usable
+     area and applies `screenGap` only as a clamp — see Offset section)
 
 2. **Custom.** Fields for x / y / width / height. A unit toggle selects
    **percent** (of the screen's usable area) or **pixels**; default is percent.
+   In percent mode, x/y are measured from the usable-area origin (top-left,
+   post-`visibleFrame`). Custom coordinates are applied **literally** against the
+   usable area: gap/offset logic does **not** apply to Custom (the whole point of
+   Custom is precise placement), so the Custom action has no "use custom offset"
+   checkbox. Values are still clamped to the usable area.
 
 **Target window:** the frontmost window of the active application.
 
