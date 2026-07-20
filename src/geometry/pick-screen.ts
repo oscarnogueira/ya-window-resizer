@@ -8,6 +8,9 @@ function overlapArea(a: Rect, b: Rect): number {
 
 /** Returns the screen with the greatest overlap with `win`; first screen if none. */
 export function pickScreen(win: Rect, screens: Screen[]): Screen {
+  if (screens.length === 0) {
+    throw new Error("pickScreen: no screens provided");
+  }
   let best = screens[0];
   let bestArea = -1;
   for (const s of screens) {

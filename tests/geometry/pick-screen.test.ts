@@ -25,4 +25,8 @@ describe("pickScreen", () => {
     const win: Rect = { x: -500, y: 100, w: 100, h: 100 };
     expect(pickScreen(win, [left, right])).toBe(left);
   });
+
+  it("throws when given no screens", () => {
+    expect(() => pickScreen({ x: 0, y: 0, w: 10, h: 10 }, [])).toThrow(/no screens/);
+  });
 });
