@@ -58,16 +58,13 @@ Napi::Value GetScreens(const Napi::CallbackInfo& info) {
   Napi::Env env = info.Env();
   NSArray<NSScreen*>* screens = [NSScreen screens];
 
-  CGFloat globalHeight = 0;
-  for (NSScreen* s in screens) {
-    CGFloat top = s.frame.origin.y + s.frame.size.height;
-    if (top > globalHeight) globalHeight = top;
-  }
+  // Quartz/AX top-left space is anchored to the PRIMARY display's top-left.
+  CGFloat primaryHeight = screens.count > 0 ? screens[0].frame.size.height : 0;
 
   auto toTopLeft = [&](NSRect r) {
     Napi::Object o = Napi::Object::New(env);
     o.Set("x", Napi::Number::New(env, r.origin.x));
-    o.Set("y", Napi::Number::New(env, globalHeight - (r.origin.y + r.size.height)));
+    o.Set("y", Napi::Number::New(env, primaryHeight - (r.origin.y + r.size.height)));
     o.Set("w", Napi::Number::New(env, r.size.width));
     o.Set("h", Napi::Number::New(env, r.size.height));
     return o;
@@ -107,11 +104,11 @@ Napi::Boolean SetWindowFrame(const Napi::CallbackInfo& info) {
 
   AXValueRef sizeVal = AXValueCreate((AXValueType)kAXValueCGSizeType, &size);
   AXValueRef posVal = AXValueCreate((AXValueType)kAXValueCGPointType, &pos);
-  AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeVal);
-  AXUIElementSetAttributeValue(window, kAXPositionAttribute, posVal);
-  AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeVal);
-  CFRelease(sizeVal);
-  CFRelease(posVal);
+  if (sizeVal) AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeVal);
+  if (posVal) AXUIElementSetAttributeValue(window, kAXPositionAttribute, posVal);
+  if (sizeVal) AXUIElementSetAttributeValue(window, kAXSizeAttribute, sizeVal);
+  if (sizeVal) CFRelease(sizeVal);
+  if (posVal) CFRelease(posVal);
   CFRelease(window);
   CFRelease(appEl);
   return Napi::Boolean::New(env, true);
