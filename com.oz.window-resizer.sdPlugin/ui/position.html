@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+  </head>
+  <body>
+    <sdpi-item label="Position">
+      <sdpi-select setting="position" default="maximize">
+        <option value="left-half">Left half</option>
+        <option value="right-half">Right half</option>
+        <option value="top-half">Top half</option>
+        <option value="bottom-half">Bottom half</option>
+        <option value="left-third">Left third</option>
+        <option value="center-third">Center third</option>
+        <option value="right-third">Right third</option>
+        <option value="left-two-thirds">Left two-thirds</option>
+        <option value="right-two-thirds">Right two-thirds</option>
+        <option value="top-left">Top-left</option>
+        <option value="top-right">Top-right</option>
+        <option value="bottom-left">Bottom-left</option>
+        <option value="bottom-right">Bottom-right</option>
+        <option value="maximize">Maximize</option>
+        <option value="center">Center</option>
+      </sdpi-select>
+    </sdpi-item>
+
+    <sdpi-item label="Screen gap (px)">
+      <sdpi-range global setting="screenGap" min="0" max="100" default="0" step="1" showlabels></sdpi-range>
+    </sdpi-item>
+    <sdpi-item label="Window gap (px)">
+      <sdpi-range global setting="windowGap" min="0" max="100" default="0" step="1" showlabels></sdpi-range>
+    </sdpi-item>
+
+    <sdpi-item label="Override offset">
+      <sdpi-checkbox setting="useCustomOffset"></sdpi-checkbox>
+    </sdpi-item>
+    <sdpi-item label="This button screen gap">
+      <sdpi-range setting="screenGap" min="0" max="100" default="0" step="1" showlabels></sdpi-range>
+    </sdpi-item>
+    <sdpi-item label="This button window gap">
+      <sdpi-range setting="windowGap" min="0" max="100" default="0" step="1" showlabels></sdpi-range>
+    </sdpi-item>
+  </body>
+</html>

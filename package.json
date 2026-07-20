@@ -7,17 +7,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "build:native": "node-gyp rebuild && mkdir -p com.oz.window-resizer.sdPlugin && cp build/Release/window.node com.oz.window-resizer.sdPlugin/window.node",
-    "build:js": "esbuild src/plugin.ts --bundle --platform=node --format=esm --outfile=com.oz.window-resizer.sdPlugin/bin/plugin.js --external:*.node",
+    "build:js": "esbuild src/plugin.ts --bundle --platform=node --format=esm --target=node20 --banner:js=\"import{createRequire as __createRequire}from'node:module';const require=__createRequire(import.meta.url);\" --outfile=com.oz.window-resizer.sdPlugin/bin/plugin.js --external:*.node",
     "build": "npm run build:native && npm run build:js",
     "smoke": "node scripts/smoke-native.mjs",
     "pack": "streamdeck pack com.oz.window-resizer.sdPlugin"
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
-    "esbuild": "^0.20.0",
+    "esbuild": "^0.25.12",
+    "node-gyp": "^10.0.0",
     "typescript": "^5.4.0",
-    "vitest": "^1.4.0",
-    "node-gyp": "^10.0.0"
+    "vitest": "^1.4.0"
   },
   "dependencies": {
     "@elgato/streamdeck": "^2.1.0",
