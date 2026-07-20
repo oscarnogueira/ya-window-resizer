@@ -3,6 +3,9 @@ import { windowApi } from "../native/window";
 import { pickScreen } from "../geometry/pick-screen";
 import { computeCustom } from "../geometry/compute-frame";
 import type { CustomSettings } from "../settings";
+import { customIcon, svgToDataUri } from "../icons/position-icon";
+import { accent } from "../settings";
+import type { WillAppearEvent, KeyAction, DialAction } from "@elgato/streamdeck";
 
 function num(v: unknown, fallback: number): number {
   const n = Number(v ?? fallback);
@@ -29,5 +32,21 @@ export class CustomAction extends SingletonAction<CustomSettings> {
     );
     const ok = windowApi.setWindowFrame(win.pid, target.x, target.y, target.w, target.h);
     if (!ok) await ev.action.showAlert();
+  }
+
+  private renderKey(
+    action: KeyAction<CustomSettings> | DialAction<CustomSettings>,
+  ): Promise<void> {
+    return action.setImage(svgToDataUri(customIcon(accent.color)));
+  }
+
+  override onWillAppear(ev: WillAppearEvent<CustomSettings>): Promise<void> {
+    return this.renderKey(ev.action);
+  }
+
+  async refreshAll(): Promise<void> {
+    for (const a of this.actions) {
+      await this.renderKey(a);
+    }
   }
 }
