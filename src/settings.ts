@@ -5,20 +5,23 @@ export interface GlobalSettings {
   windowGap?: number;
 }
 
-export interface PositionSettings {
+// NB: these are `type` aliases, not `interface`s, so they satisfy the SDK's
+// `SingletonAction<T extends JsonObject>` constraint. Object-literal type
+// aliases get an implicit index signature; interfaces do not.
+export type PositionSettings = {
   position?: Position;
   useCustomOffset?: boolean;
   screenGap?: number;
   windowGap?: number;
-}
+};
 
-export interface CustomSettings {
+export type CustomSettings = {
   x?: number;
   y?: number;
   w?: number;
   h?: number;
   unit?: Unit;
-}
+};
 
 export function resolveGaps(
   global: GlobalSettings,
