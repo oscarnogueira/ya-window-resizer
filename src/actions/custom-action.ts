@@ -4,6 +4,11 @@ import { pickScreen } from "../geometry/pick-screen";
 import { computeCustom } from "../geometry/compute-frame";
 import type { CustomSettings } from "../settings";
 
+function num(v: unknown, fallback: number): number {
+  const n = Number(v ?? fallback);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 @action({ UUID: "com.oz.window-resizer.custom" })
 export class CustomAction extends SingletonAction<CustomSettings> {
   override async onKeyDown(ev: KeyDownEvent<CustomSettings>): Promise<void> {
@@ -19,13 +24,7 @@ export class CustomAction extends SingletonAction<CustomSettings> {
     const screen = pickScreen(win, windowApi.getScreens());
     const s = ev.payload.settings;
     const target = computeCustom(
-      {
-        x: Number(s.x ?? 0),
-        y: Number(s.y ?? 0),
-        w: Number(s.w ?? 100),
-        h: Number(s.h ?? 100),
-        unit: s.unit ?? "percent",
-      },
+      { x: num(s.x, 0), y: num(s.y, 0), w: num(s.w, 100), h: num(s.h, 100), unit: s.unit ?? "percent" },
       screen,
     );
     const ok = windowApi.setWindowFrame(win.pid, target.x, target.y, target.w, target.h);
