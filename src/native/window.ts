@@ -8,15 +8,27 @@ const native = require("../window.node") as NativeWindow;
 
 interface FrontWindow extends Rect {
   pid: number;
-  /** Localized name of the app resolved via the live AX system-wide query. */
+  /** Localized name of the chosen target app. */
   app: string;
-  /** Localized name from NSWorkspace.frontmostApplication (diagnostic only). */
-  wsApp: string;
+}
+
+/** Raw native result: window fields plus multi-source diagnostics. */
+interface NativeFront extends Partial<Rect> {
+  ok: boolean;
+  pid?: number;
+  app?: string;
+  cgApp?: string;
+  cgPid?: number;
+  wsApp?: string;
+  wsPid?: number;
+  axPid?: number;
+  axAppErr?: number;
+  winErr?: number;
 }
 
 interface NativeWindow {
   isTrusted(): boolean;
-  getFrontmostWindow(): FrontWindow | null;
+  getFrontmostWindow(): NativeFront;
   getScreens(): Screen[];
   setWindowFrame(pid: number, x: number, y: number, w: number, h: number): boolean;
 }
@@ -28,13 +40,16 @@ interface NativeWindow {
  */
 export const windowApi = {
   isTrusted: () => native.isTrusted(),
-  getFrontmostWindow: () => {
-    const w = native.getFrontmostWindow();
-    // Diagnostic: compare the live AX focused app against NSWorkspace's value.
+  getFrontmostWindow: (): FrontWindow | null => {
+    const r = native.getFrontmostWindow();
+    // Diagnostic: which live source names the active app, and any AX errors.
     streamDeck.logger.info(
-      `[frontmost] AX="${w?.app ?? "-"}" (pid ${w?.pid ?? "-"}) | NSWorkspace="${w?.wsApp ?? "-"}"`,
+      `[frontmost] ok=${r.ok} chosen="${r.app ?? "-"}" (pid ${r.pid ?? "-"}) | ` +
+        `CG="${r.cgApp ?? "-"}" (${r.cgPid ?? "-"}) | NSWorkspace="${r.wsApp ?? "-"}" (${r.wsPid ?? "-"}) | ` +
+        `axPid=${r.axPid ?? "-"} axAppErr=${r.axAppErr ?? "-"} winErr=${r.winErr ?? "-"}`,
     );
-    return w;
+    if (!r.ok) return null;
+    return { x: r.x!, y: r.y!, w: r.w!, h: r.h!, pid: r.pid!, app: r.app ?? "" };
   },
   getScreens: () => native.getScreens(),
   setWindowFrame: (pid: number, x: number, y: number, w: number, h: number) =>
