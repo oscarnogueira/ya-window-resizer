@@ -142,6 +142,42 @@ export function customIcon(color: string): string {
   );
 }
 
+/** Position list glyph: a 3x3 grid with the top-left cell highlighted. */
+export function positionListIcon(color: string): string {
+  const gx = OW / 3, gy = OH / 3;
+  let cells = "";
+  for (let i = 0; i < 3; i++) {
+    for (let j = 0; j < 3; j++) {
+      const on = i === 0 && j === 0;
+      cells +=
+        `<rect x="${n(OX + i * gx + 4)}" y="${n(OY + j * gy + 4)}" ` +
+        `width="${n(gx - 8)}" height="${n(gy - 8)}" rx="5" fill="${color}" fill-opacity="${on ? "1" : "0.22"}"/>`;
+    }
+  }
+  return `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">${cells}</svg>`;
+}
+
+/** App mark: a screen outline with an inner offset window (line style). */
+export function appIcon(color: string): string {
+  return (
+    `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">` +
+    `<rect x="20" y="30" width="104" height="84" rx="16" fill="none" stroke="${color}" stroke-width="8"/>` +
+    `<rect x="46" y="52" width="52" height="40" rx="8" fill="${color}"/>` +
+    `</svg>`
+  );
+}
+
+/** Standalone application badge: accent rounded square + white app mark. */
+export function appBadge(bg = "#3B99FC"): string {
+  return (
+    `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">` +
+    `<rect x="8" y="8" width="128" height="128" rx="28" fill="${bg}"/>` +
+    `<rect x="34" y="44" width="76" height="58" rx="12" fill="none" stroke="#ffffff" stroke-width="8"/>` +
+    `<rect x="54" y="60" width="38" height="28" rx="6" fill="#ffffff"/>` +
+    `</svg>`
+  );
+}
+
 /** Encode an SVG string as a data URI suitable for KeyAction.setImage. */
 export function svgToDataUri(svg: string): string {
   return `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;

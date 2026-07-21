@@ -1,83 +1,66 @@
-import { deflateSync } from "node:zlib";
-import { writeFileSync, mkdirSync } from "node:fs";
+// Rasterizes the SVG icon glyphs to the PNG files the manifest references.
+// Requires `rsvg-convert` (brew install librsvg). The on-tile key images are
+// generated dynamically at runtime via setImage; these are the static list /
+// category / plugin icons plus a sensible key fallback.
+import { build } from "esbuild";
+import { execFileSync } from "node:child_process";
+import { writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { dirname } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
-function crc32(buf) {
-  let c = ~0;
-  for (let i = 0; i < buf.length; i++) {
-    c ^= buf[i];
-    for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
-  }
-  return (~c) >>> 0;
-}
+const here = dirname(fileURLToPath(import.meta.url));
+const root = dirname(here);
+const imgs = `${root}/fyi.oz.yet-another-window-resizer.sdPlugin/imgs/`;
+const tmpMod = `${root}/.icons-tmp.mjs`;
+const tmpSvg = `${root}/.icon-tmp.svg`;
 
-function chunk(type, data) {
-  const typeBuf = Buffer.from(type, "ascii");
-  const body = Buffer.concat([typeBuf, data]);
-  const len = Buffer.alloc(4);
-  len.writeUInt32BE(data.length, 0);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(crc32(body), 0);
-  return Buffer.concat([len, body, crc]);
-}
+// Bundle the TS icon module so we can call the generators from Node.
+await build({
+  entryPoints: [`${root}/src/icons/position-icon.ts`],
+  bundle: true,
+  platform: "node",
+  format: "esm",
+  outfile: tmpMod,
+  logLevel: "silent",
+});
+const I = await import(pathToFileURL(tmpMod).href);
 
-// Solid opaque RGBA PNG of size x size, given [r,g,b].
-function makePng(size, [r, g, b]) {
-  const sig = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  const ihdr = Buffer.alloc(13);
-  ihdr.writeUInt32BE(size, 0);
-  ihdr.writeUInt32BE(size, 4);
-  ihdr[8] = 8; // bit depth
-  ihdr[9] = 6; // color type RGBA
-  ihdr[10] = 0; // compression
-  ihdr[11] = 0; // filter
-  ihdr[12] = 0; // interlace
+const OFF = "#dcdcdc"; // sidebar / list glyphs
+const ACCENT = "#3B99FC"; // key fallback (matches the live default)
 
-  const rowLen = 1 + size * 4;
-  const raw = Buffer.alloc(rowLen * size);
-  for (let y = 0; y < size; y++) {
-    const off = y * rowLen;
-    raw[off] = 0; // filter: none
-    for (let x = 0; x < size; x++) {
-      const p = off + 1 + x * 4;
-      raw[p] = r;
-      raw[p + 1] = g;
-      raw[p + 2] = b;
-      raw[p + 3] = 255;
-    }
-  }
-  const idat = deflateSync(raw);
-  return Buffer.concat([
-    sig,
-    chunk("IHDR", ihdr),
-    chunk("IDAT", idat),
-    chunk("IEND", Buffer.alloc(0)),
-  ]);
-}
-
-const base = new URL("../fyi.oz.yet-another-window-resizer.sdPlugin/imgs/", import.meta.url).pathname;
-
-// [relative path (no ext), rgb]
+// [relative path without extension, svg string]
 const targets = [
-  ["pluginIcon", [90, 120, 200]],
-  ["categoryIcon", [90, 120, 200]],
-  ["actions/position/icon", [80, 170, 120]],
-  ["actions/position/key", [80, 170, 120]],
-  ["actions/custom/icon", [200, 140, 70]],
-  ["actions/custom/key", [200, 140, 70]],
-  ["actions/cycle/icon", [130, 110, 220]],
-  ["actions/cycle/key", [130, 110, 220]],
-  ["actions/cycle-sides/icon", [110, 150, 220]],
-  ["actions/cycle-sides/key", [110, 150, 220]],
-  ["actions/cycle-top-bottom/icon", [150, 130, 210]],
-  ["actions/cycle-top-bottom/key", [150, 130, 210]],
+  ["pluginIcon", I.appBadge()],
+  ["categoryIcon", I.appIcon(OFF)],
+
+  ["actions/position/icon", I.positionListIcon(OFF)],
+  ["actions/position/key", I.positionIcon("left-half", ACCENT)],
+
+  ["actions/custom/icon", I.customIcon(OFF)],
+  ["actions/custom/key", I.customIcon(ACCENT)],
+
+  ["actions/cycle/icon", I.cycleCornersIcon(OFF)],
+  ["actions/cycle/key", I.cycleCornersIcon(ACCENT)],
+
+  ["actions/cycle-sides/icon", I.cycleSidesIcon(OFF)],
+  ["actions/cycle-sides/key", I.cycleSidesIcon(ACCENT)],
+
+  ["actions/cycle-top-bottom/icon", I.cycleTopBottomIcon(OFF)],
+  ["actions/cycle-top-bottom/key", I.cycleTopBottomIcon(ACCENT)],
 ];
 
-for (const [rel, rgb] of targets) {
-  const p1 = base + rel + ".png";
-  const p2 = base + rel + "@2x.png";
-  mkdirSync(dirname(p1), { recursive: true });
-  writeFileSync(p1, makePng(72, rgb));
-  writeFileSync(p2, makePng(144, rgb));
-  console.log("wrote", rel + ".png", "and @2x");
+function raster(svg, outPng, size) {
+  writeFileSync(tmpSvg, svg);
+  execFileSync("rsvg-convert", ["-w", String(size), "-h", String(size), tmpSvg, "-o", outPng]);
 }
+
+for (const [rel, svg] of targets) {
+  const base = imgs + rel;
+  mkdirSync(dirname(base), { recursive: true });
+  raster(svg, base + ".png", 72);
+  raster(svg, base + "@2x.png", 144);
+  console.log("wrote", rel + ".png (+@2x)");
+}
+
+rmSync(tmpMod, { force: true });
+rmSync(tmpSvg, { force: true });
