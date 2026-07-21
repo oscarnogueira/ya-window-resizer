@@ -31,7 +31,7 @@ const ACCENT = "#3B99FC"; // key fallback (matches the live default)
 // [relative path without extension, svg string]
 const targets = [
   ["pluginIcon", I.appBadge()],
-  ["categoryIcon", I.appIcon(OFF)],
+  ["categoryIcon", I.bentoIcon(OFF)],
 
   ["actions/position/icon", I.positionListIcon(OFF)],
   ["actions/position/key", I.positionIcon("left-half", ACCENT)],

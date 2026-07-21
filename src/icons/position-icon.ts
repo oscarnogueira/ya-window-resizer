@@ -168,6 +168,21 @@ export function appIcon(color: string): string {
 }
 
 /**
+ * Bento layout mark (transparent, monochrome): one large pane on the left, two
+ * stacked on the right with the top lit and the bottom dimmed. Same layout as
+ * the app badge, for the sidebar/category in a single color.
+ */
+export function bentoIcon(color: string): string {
+  return (
+    `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">` +
+    `<rect x="26" y="30" width="46" height="84" rx="12" fill="${color}"/>` +
+    `<rect x="80" y="30" width="38" height="38" rx="10" fill="${color}"/>` +
+    `<rect x="80" y="76" width="38" height="38" rx="10" fill="${color}" fill-opacity="0.3"/>` +
+    `</svg>`
+  );
+}
+
+/**
  * Standalone application badge: a bento layout on a dark rounded square — one
  * large accent pane on the left, two white panes stacked on the right with the
  * top one lit and the bottom one dimmed.
