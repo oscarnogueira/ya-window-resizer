@@ -2,6 +2,7 @@
   "Name": "Yet Another Window Resizer",
   "Version": "0.1.0.0",
   "Author": "oz",
+  "Description": "Position and resize the frontmost macOS window from your keys, with a configurable gap between the window and the screen edges and between adjacent windows.",
   "Actions": [
     {
       "Name": "Position",
@@ -9,8 +10,14 @@
       "Icon": "imgs/actions/position/icon",
       "Tooltip": "Move/resize the frontmost window to a preset position.",
       "PropertyInspectorPath": "ui/position.html",
-      "Controllers": ["Keypad"],
-      "States": [{ "Image": "imgs/actions/position/key" }]
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/position/key"
+        }
+      ]
     },
     {
       "Name": "Custom",
@@ -18,8 +25,14 @@
       "Icon": "imgs/actions/custom/icon",
       "Tooltip": "Move/resize the frontmost window to custom coordinates.",
       "PropertyInspectorPath": "ui/custom.html",
-      "Controllers": ["Keypad"],
-      "States": [{ "Image": "imgs/actions/custom/key" }]
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/custom/key"
+        }
+      ]
     },
     {
       "Name": "Cycle Corners",
@@ -27,8 +40,14 @@
       "Icon": "imgs/actions/cycle/icon",
       "Tooltip": "Cycle the frontmost window clockwise through the four corners.",
       "PropertyInspectorPath": "ui/cycle.html",
-      "Controllers": ["Keypad"],
-      "States": [{ "Image": "imgs/actions/cycle/key" }]
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/cycle/key"
+        }
+      ]
     },
     {
       "Name": "Cycle Sides",
@@ -36,8 +55,14 @@
       "Icon": "imgs/actions/cycle-sides/icon",
       "Tooltip": "Cycle the frontmost window between the left and right halves.",
       "PropertyInspectorPath": "ui/cycle.html",
-      "Controllers": ["Keypad"],
-      "States": [{ "Image": "imgs/actions/cycle-sides/key" }]
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/cycle-sides/key"
+        }
+      ]
     },
     {
       "Name": "Cycle Top/Bottom",
@@ -45,17 +70,33 @@
       "Icon": "imgs/actions/cycle-top-bottom/icon",
       "Tooltip": "Cycle the frontmost window between the top and bottom halves.",
       "PropertyInspectorPath": "ui/cycle.html",
-      "Controllers": ["Keypad"],
-      "States": [{ "Image": "imgs/actions/cycle-top-bottom/key" }]
+      "Controllers": [
+        "Keypad"
+      ],
+      "States": [
+        {
+          "Image": "imgs/actions/cycle-top-bottom/key"
+        }
+      ]
     }
   ],
   "Category": "Yet Another Window Resizer",
   "CategoryIcon": "imgs/categoryIcon",
   "Icon": "imgs/pluginIcon",
   "SDKVersion": 2,
-  "Software": { "MinimumVersion": "6.5" },
-  "OS": [{ "Platform": "mac", "MinimumVersion": "11" }],
-  "Nodejs": { "Version": "20", "Debug": "enabled" },
+  "Software": {
+    "MinimumVersion": "6.5"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "11"
+    }
+  ],
+  "Nodejs": {
+    "Version": "20",
+    "Debug": "enabled"
+  },
   "CodePath": "bin/plugin.js",
   "UUID": "fyi.oz.yet-another-window-resizer"
 }
