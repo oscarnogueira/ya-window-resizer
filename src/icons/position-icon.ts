@@ -167,13 +167,18 @@ export function appIcon(color: string): string {
   );
 }
 
-/** Standalone application badge: accent rounded square + white app mark. */
-export function appBadge(bg = "#3B99FC"): string {
+/**
+ * Standalone application badge: a bento layout on a dark rounded square — one
+ * large accent pane on the left, two white panes stacked on the right with the
+ * top one lit and the bottom one dimmed.
+ */
+export function appBadge(): string {
   return (
     `<svg width="144" height="144" viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">` +
-    `<rect x="8" y="8" width="128" height="128" rx="28" fill="${bg}"/>` +
-    `<rect x="34" y="44" width="76" height="58" rx="12" fill="none" stroke="#ffffff" stroke-width="8"/>` +
-    `<rect x="54" y="60" width="38" height="28" rx="6" fill="#ffffff"/>` +
+    `<rect x="8" y="8" width="128" height="128" rx="28" fill="#23262d"/>` +
+    `<rect x="26" y="30" width="46" height="84" rx="12" fill="#3B99FC"/>` +
+    `<rect x="80" y="30" width="38" height="38" rx="10" fill="#ffffff"/>` +
+    `<rect x="80" y="76" width="38" height="38" rx="10" fill="#ffffff" fill-opacity="0.3"/>` +
     `</svg>`
   );
 }
