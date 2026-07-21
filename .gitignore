@@ -29,3 +29,6 @@ coverage/
 .vscode/
 .idea/
 *.swp
+
+# Internal spec/plan docs
+docs/superpowers/
