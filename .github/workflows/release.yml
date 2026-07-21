@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: macos-latest
+    runs-on: macos-15
     env:
       PLUGIN: fyi.oz.yet-another-window-resizer.sdPlugin
     steps:
@@ -33,18 +33,10 @@ jobs:
             exit 1
           fi
 
-      - name: Build universal native addon (arm64 + x86_64)
+      - name: Build (universal native addon + JS bundle)
         run: |
-          npx node-gyp rebuild --arch=arm64
-          cp build/Release/window.node window-arm64.node
-          npx node-gyp rebuild --arch=x64
-          cp build/Release/window.node window-x64.node
-          mkdir -p "$PLUGIN"
-          lipo -create -output "$PLUGIN/window.node" window-arm64.node window-x64.node
+          npm run build
           lipo -info "$PLUGIN/window.node"
-
-      - name: Bundle the plugin JS
-        run: npm run build:js
 
       - name: Package the .streamDeckPlugin
         run: |

@@ -8,10 +8,9 @@
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "xcode_settings": {
-        "OTHER_CFLAGS": [ "-ObjC++" ],
-        "MACOSX_DEPLOYMENT_TARGET": "11.0",
-        "ARCHS": [ "x86_64", "arm64" ],
-        "ONLY_ACTIVE_ARCH": "NO"
+        "OTHER_CFLAGS": [ "-ObjC++", "-arch", "x86_64", "-arch", "arm64" ],
+        "OTHER_LDFLAGS": [ "-arch", "x86_64", "-arch", "arm64" ],
+        "MACOSX_DEPLOYMENT_TARGET": "11.0"
       },
       "link_settings": {
         "libraries": [

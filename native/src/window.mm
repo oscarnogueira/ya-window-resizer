@@ -1,5 +1,6 @@
 #include <napi.h>
 #include <string>
+#import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <CoreGraphics/CoreGraphics.h>
