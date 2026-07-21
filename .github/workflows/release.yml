@@ -1,0 +1,72 @@
+name: Release
+
+# Trigger: push a SemVer tag, e.g. `git push origin v0.2.0`.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write # needed to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: macos-latest
+    env:
+      PLUGIN: fyi.oz.yet-another-window-resizer.sdPlugin
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Verify the tag matches package.json
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          PKG="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$PKG" ]; then
+            echo "::error::Tag v$TAG does not match package.json version $PKG"
+            exit 1
+          fi
+
+      - name: Build universal native addon (arm64 + x86_64)
+        run: |
+          npx node-gyp rebuild --arch=arm64
+          cp build/Release/window.node window-arm64.node
+          npx node-gyp rebuild --arch=x64
+          cp build/Release/window.node window-x64.node
+          mkdir -p "$PLUGIN"
+          lipo -create -output "$PLUGIN/window.node" window-arm64.node window-x64.node
+          lipo -info "$PLUGIN/window.node"
+
+      - name: Bundle the plugin JS
+        run: npm run build:js
+
+      - name: Package the .streamDeckPlugin
+        run: |
+          npm i -g @elgato/cli
+          npm run pack
+
+      - name: Extract release notes from CHANGELOG
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          awk -v h="## [$VER]" '
+            index($0, h) == 1 { f = 1; print; next }
+            f && index($0, "## [") == 1 { f = 0 }
+            f && index($0, "[") == 1 { f = 0 }
+            f { print }
+          ' CHANGELOG.md > RELEASE_NOTES.md
+          echo "---- notes ----"; cat RELEASE_NOTES.md
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            ./*.streamDeckPlugin \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.md

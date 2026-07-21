@@ -140,15 +140,20 @@ Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md). Each version is tagged
 `vX.Y.Z` and published as a GitHub Release with the built `.streamDeckPlugin`
 attached — the compiled artifact is not committed to the repo.
 
-To cut a release:
+Releases are automated by GitHub Actions (`.github/workflows/release.yml`).
+Pushing a `vX.Y.Z` tag builds a **universal** (arm64 + x86_64) addon, packages
+the plugin, and creates the Release with the `.streamDeckPlugin` attached and
+notes pulled from `CHANGELOG.md`. To cut a release:
 
 ```bash
-# bump the version in package.json and manifest.json, update CHANGELOG.md, then:
-git tag v0.1.0
-git push origin v0.1.0
-npm run pack                                   # produces the .streamDeckPlugin
-gh release create v0.1.0 *.streamDeckPlugin --notes-file <(sed -n '/## \[0.1.0\]/,/## \[/p' CHANGELOG.md)
+# 1. bump the version in package.json and manifest.json (X.Y.Z / X.Y.Z.0)
+# 2. add the new section to CHANGELOG.md, commit, and push main
+git tag v0.2.0
+git push origin v0.2.0     # the Release workflow does the rest
 ```
+
+The workflow fails if the tag doesn't match `package.json`. A separate `CI`
+workflow typechecks and runs the tests on every push and pull request.
 
 ## License
 
