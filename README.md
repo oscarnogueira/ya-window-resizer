@@ -128,6 +128,28 @@ app and would move the wrong window.
 Key icons are generated procedurally as SVG and set at runtime with `setImage`,
 so they reflect the selected position and the accent color live.
 
+## Versioning & releases
+
+The project follows [Semantic Versioning](https://semver.org/). While the version
+is `0.x`, minor releases may include breaking changes. `package.json` and the
+Stream Deck `manifest.json` are kept in sync — the manifest uses a four-part
+`MAJOR.MINOR.PATCH.BUILD` string (the `BUILD` digit is only bumped when
+re-packaging without a version change).
+
+Changes are recorded in [`CHANGELOG.md`](CHANGELOG.md). Each version is tagged
+`vX.Y.Z` and published as a GitHub Release with the built `.streamDeckPlugin`
+attached — the compiled artifact is not committed to the repo.
+
+To cut a release:
+
+```bash
+# bump the version in package.json and manifest.json, update CHANGELOG.md, then:
+git tag v0.1.0
+git push origin v0.1.0
+npm run pack                                   # produces the .streamDeckPlugin
+gh release create v0.1.0 *.streamDeckPlugin --notes-file <(sed -n '/## \[0.1.0\]/,/## \[/p' CHANGELOG.md)
+```
+
 ## License
 
 Not yet specified. The bundled `@elgato/streamdeck` SDK is MIT.
