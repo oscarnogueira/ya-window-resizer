@@ -1,7 +1,31 @@
+# Dependencies
 node_modules/
-*.streamDeckPlugin
+
+# TypeScript / bundler output
+dist/
+*.tsbuildinfo
+
+# Native addon build (node-gyp)
 build/
-fyi.oz.yet-another-window-resizer.sdPlugin/window.node
-.DS_Store
+*.node
+
+# Generated plugin artifacts (rebuilt by `npm run build`)
 fyi.oz.yet-another-window-resizer.sdPlugin/bin/
+fyi.oz.yet-another-window-resizer.sdPlugin/window.node
 fyi.oz.yet-another-window-resizer.sdPlugin/logs/
+
+# Packaged plugin
+*.streamDeckPlugin
+
+# Temp files from scripts/gen-icons.mjs
+.icons-tmp.mjs
+.icon-tmp.svg
+
+# Test coverage
+coverage/
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
