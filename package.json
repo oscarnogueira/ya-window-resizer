@@ -4,6 +4,7 @@
   "type": "module",
   "description": "Position and resize the frontmost macOS window from a Stream Deck, with configurable gaps.",
   "scripts": {
+    "install": "node -e \"\"",
     "test": "vitest run",
     "test:watch": "vitest",
     "build:native": "node-gyp rebuild && mkdir -p fyi.oz.yet-another-window-resizer.sdPlugin && cp build/Release/window.node fyi.oz.yet-another-window-resizer.sdPlugin/window.node",
